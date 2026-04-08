@@ -1,0 +1,26 @@
+services:
+  go_service:
+    build: ./m_task_api
+    ports:
+      - "8080:8080"
+    mem_limit: 256m
+    cpus: 0.5
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8080/token"]
+      interval: 5s
+      retries: 5
+
+  python_client:
+    build: ./python_client
+    environment:
+      - BASE_URL=http://go_service:8080
+    depends_on:
+      go_service:
+        condition: service_healthy
+    mem_limit: 128m
+    cpus: 0.25
+
+  rust_service:
+    build: ./rust_service
+    mem_limit: 128m
+    cpus: 0.25
